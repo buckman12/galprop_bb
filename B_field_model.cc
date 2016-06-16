@@ -57,15 +57,13 @@ double B_field_model(double r,double z,int model)
 		double tix = (model-10.0)/5.0;
 		
 		b_fieldMW = BoMW*exp(-(r-ro)/rscaleMW)*exp(-fabs(z)/zscaleMW);
-		b_field82 = Bo82*exp(-(r)/rscale82)*pow(fabs(z)/zscale82, bz_power);
-		b_field = b_fieldMW*(1.+tix) + b_field82*tix;
+		b_field82 = Bo82*exp(-(r)/rscale82)*pow((fabs(z)+zscale82)/zscale82, bz_power);
+		b_field = b_fieldMW*(1.-tix) + b_field82*tix;
 	}
 	
 	if (model==20) //M82 Simple
 	{
-		double BoMW=5.0e-10;
-		rscaleMW=
-		Bo82=5.0e-9; // Telsa
+		Bo=5.0e-9; // Telsa
 		rscale=0.2; //kpc
 		zscale=0.05; //kpc
 		double bz_power=-2.; 
@@ -91,9 +89,7 @@ double B_field_model(double r,double z,int model)
       b_field=Bo *exp(-(r-ro)/rscale) * exp(-fabs(z)/zscale);
    }
    
-   cout<<"galprop original model synch1 ="<<model<<" Bo="<<Bo<<" rscale="<<rscale<<" zscale="<<zscale
-  		<<" (z) = ("<<z<<")" << " r=" <<r 
-  		<<" b_field="<<b_field<<endl;
+   cout<<"B_field (r,z) = ("<<r<<","<<z<<") "<<b_field<<endl;
    return b_field;
 }
 

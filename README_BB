@@ -1,0 +1,18 @@
+Modifications:
+
+
+-Modified to read in gascubes and not gascubes_rlb 
+
+-Emission output files now show full 3D:
+	store_bremss_emiss
+	store_IC_emiss
+	store_pi0_decay_emiss
+	store_synch_emiss
+	
+-New B_field_model
+-New source_distribution
+
+-Modified radius to normalize at:
+	electrons_normalize
+	positrons_normalize
+	nuclei_normalize

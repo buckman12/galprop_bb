@@ -194,9 +194,9 @@ void B_field_3D_model
    Bregz=0.0;
 
    Bran=b_field;
-   Branx=Bran/sqrt(3.0);  // put all field in x-direction (has no significance)
-   Brany=Bran/sqrt(3.0);
-   Branz=Bran/sqrt(3.0);
+   Branx=Bran;  // put all field in x-direction (has no significance)
+   Brany=0.0;
+   Branz=0.0;
 
    theta=0.0;
    phi  =0.0;
@@ -1916,7 +1916,7 @@ cout <<"Bran  = "<<Bran <<" Branx  = "<<Branx     <<"  Brany = "<<Brany     <<" 
    rscale=parameters[1]; // kpc
    zscale=parameters[2]; // kpc
    b_power=parameters[3]; //power law
-   b_field=Bo *exp(-(r)/rscale) * pow(fabs(z)/zscale, -b_power);
+   b_field=Bo *exp(-(r)/rscale) * pow((fabs(z)+zscale)/zscale, b_power);
 
    // the regular field is zero
    Breg =0.0;

@@ -1,5 +1,6 @@
 //**.****|****.****|****.****|****.****|****.****|****.****|****.****|****.****|
 // * store_synch_emiss.cc *                    galprop package *  
+// * Modified to output 3D BJB20160615
 //**"****!****"****!****"****!****"****!****"****!****"****!****"****!****"****|
 
 #include <cassert>
@@ -70,14 +71,14 @@ int Galprop::store_synch_emiss() {                //AWS20080314
   }
    
   if (3 == galaxy.n_spatial_dimensions) {
-
-    for (int iz = 0; iz < naxes[2]; ++iz)
-      for (int iy = 0; iy < naxes[1]; ++iy)
-	for (int ix = 0; ix < naxes[0]; ++ix) {
+		for (int ip = 0; ip < naxes[3]; ++ip)	
+		for (int iz = 0; iz < naxes[2]; ++iz)
+		for (int iy = 0; iy < naxes[1]; ++iy)
+		for (int ix = 0; ix < naxes[0]; ++ix) {
  
-	  if(stokes==0)array[i] = galaxy.synchrotron_emiss  .d3[ix][iy][iz].s[0];//AWS20100708
-	  if(stokes==1)array[i] = galaxy.synchrotron_Q_emiss.d3[ix][iy][iz].s[0];//AWS20100708
-	  if(stokes==2)array[i] = galaxy.synchrotron_U_emiss.d3[ix][iy][iz].s[0];//AWS20100708
+	  if(stokes==0)array[i] = galaxy.synchrotron_emiss  .d3[ix][iy][iz].s[ip];//AWS20100708
+	  if(stokes==1)array[i] = galaxy.synchrotron_Q_emiss.d3[ix][iy][iz].s[ip];//AWS20100708
+	  if(stokes==2)array[i] = galaxy.synchrotron_U_emiss.d3[ix][iy][iz].s[ip];//AWS20100708
 	  ++i;
 
 	}
@@ -124,22 +125,48 @@ int Galprop::store_synch_emiss() {                //AWS20080314
     crval1 = galaxy.x_min;
     crval2 = galaxy.y_min;
     crval3 = galaxy.z_min;
+    crval4 = log10(galaxy.nu_synch_min);
     
     cdelt1 = galaxy.dx;
     cdelt2 = galaxy.dy;
     cdelt3 = galaxy.dz;
+    cdelt3 = log10(galaxy.nu_synch_factor);
     
   }
+  
+  if(galaxy.n_spatial_dimensions==2) {
+		fits_update_key(fptr, TDOUBLE, "CRVAL1", &crval1,"Start of radial dimension (kpc)", &status);
+		fits_update_key(fptr, TDOUBLE, "CRVAL2", &crval2,"Start of Z dimension (kpc)", &status);
+		fits_update_key(fptr, TDOUBLE, "CRVAL3", &crval3,"Start of log10(energy grid/MeV)", &status);
+		fits_update_key(fptr, TDOUBLE, "CRVAL4", &crval4,"Nothing", &status);
+		
+		fits_update_key(fptr, TDOUBLE, "CDELT1", &cdelt1,"Increment of radial dimension (kpc)", &status);
+		fits_update_key(fptr, TDOUBLE, "CDELT2", &cdelt2,"Increment of Z dimension (kpc)", &status);
+		fits_update_key(fptr, TDOUBLE, "CDELT3", &cdelt3,"Increment of log10(nu_synch_min)", &status);
+		fits_update_key(fptr, TDOUBLE, "CDELT4", &cdelt4,"Nothing", &status);
+  }
+  
+  if(galaxy.n_spatial_dimensions==3) {
+		fits_update_key(fptr, TDOUBLE, "CRVAL1", &crval1,"Start of X dimension (kpc)", &status);
+		fits_update_key(fptr, TDOUBLE, "CRVAL2", &crval2,"Start of Y dimension (kpc)", &status);
+		fits_update_key(fptr, TDOUBLE, "CRVAL3", &crval3,"Start of Z dimension (kpc)", &status);
+		fits_update_key(fptr, TDOUBLE, "CRVAL4", &crval4,"Start of log10(energy grid/MeV)", &status);
+		
+		fits_update_key(fptr, TDOUBLE, "CDELT1", &cdelt1,"Increment of X dimension (kpc)", &status);
+		fits_update_key(fptr, TDOUBLE, "CDELT2", &cdelt2,"Increment of Y dimension (kpc)", &status);
+		fits_update_key(fptr, TDOUBLE, "CDELT3", &cdelt3,"Increment of Z dimension (kpc)", &status);
+		fits_update_key(fptr, TDOUBLE, "CDELT4", &cdelt4,"Increment of log10(nu_synch_factor)", &status);
+  }
 
-  fits_update_key(fptr, TDOUBLE, "CRVAL1", &crval1,"Start of axis 1", &status);
+  /*fits_update_key(fptr, TDOUBLE, "CRVAL1", &crval1,"Start of axis 1", &status);
   fits_update_key(fptr, TDOUBLE, "CRVAL2", &crval2,"Start of axis 2", &status);
   fits_update_key(fptr, TDOUBLE, "CRVAL3", &crval3,"Start of axis 3", &status);
-  //  fits_update_key(fptr, TDOUBLE, "CRVAL4", &crval4,"Start of axis 4", &status);
+  fits_update_key(fptr, TDOUBLE, "CRVAL4", &crval4,"Start of axis 4", &status);
   
   fits_update_key(fptr, TDOUBLE, "CDELT1", &cdelt1,"Increment of axis 1", &status);
   fits_update_key(fptr, TDOUBLE, "CDELT2", &cdelt2,"Increment of axis 2", &status);
   fits_update_key(fptr, TDOUBLE, "CDELT3", &cdelt3,"Increment of axis 3", &status);
-    //  fits_update_key(fptr, TDOUBLE, "CDELT4", &cdelt4,"Increment of axis 4", &status);
+  fits_update_key(fptr, TDOUBLE, "CDELT4", &cdelt4,"Increment of axis 4", &status); */
 
   fits_close_file(fptr, &status);            /* close the file */
 

@@ -423,7 +423,7 @@ double Galprop::source_distribution (const double x,
 	result = cnorm;
 	}
 	else {
-	result = cnorm * exp(-(r-rscale)/rscale) * exp(-(fabs(z)-zscale)/zscale);
+	result = cnorm*exp(-(r-rscale)/rscale)*exp(-(fabs(z)-zscale)/zscale);
 	}
     }//M82_a
   
