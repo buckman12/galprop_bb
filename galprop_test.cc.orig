@@ -363,7 +363,7 @@ int Galprop::Run(const string& galdefPath,
 
 		for (int iEgamma = 0; iEgamma < galaxy.n_E_gammagrid; ++iEgamma)
 			galaxy.E_gamma[iEgamma] =
-			    exp(log(galaxy.E_gamma_min) +iEgamma*log(galaxy.E_gamma_factor));
+			  exp(log(galaxy.E_gamma_min) +iEgamma*log(galaxy.E_gamma_factor));
 
 		char cor[]= {"COR"}, hir[]= {"HIR"}; // IMOS20080114
 

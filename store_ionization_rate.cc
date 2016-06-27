@@ -1,14 +1,15 @@
+
 //**.****|****.****|****.****|****.****|****.****|****.****|****.****|****.****|
-// * store_pi0_decay_emiss.cc *                    galprop package * 4/14/2000
+// * store_ionization_rate.cc *                    galprop package * 4/14/2000
 // * Modified to output 3D BJB20160615
 //**"****!****"****!****"****!****"****!****"****!****"****!****"****!****"****|
 
 #include <cassert>
-#include <cstring>
 #include <string>
+#include <cstring>
 #include <valarray>
 
-using namespace std;
+using namespace std;//AWS20050624
 
 #include "galprop_classes.h"
 #include "galprop_internal.h"
@@ -17,59 +18,38 @@ using namespace std;
 
 #include <ErrorLogger.h>
 
-int Galprop::store_pi0_decay_emiss()
+int Galprop::store_ionization_rate()
 {
 
 	INFO("Entry");
 
-	int naxis = 4;
-	long naxes[naxis];
+	int status = 0;
 
-	if(2 == galaxy.n_spatial_dimensions) {
+	fitsfile *fptr;       /* pointer to the FITS file; defined in fitsio.h */
+	long  fpixel = 1, naxis = 4, nelements, exposure;
+	long naxes[4]  ;
+
+	if(galaxy.n_spatial_dimensions==2) {
 		naxes[0]=galaxy.n_rgrid;
 		naxes[1]=galaxy.n_zgrid;
-		naxes[2]=galaxy.n_E_gammagrid;
+		naxes[2]=1;
 		naxes[3]=1;
 	} //2D
 
-	if(3 == galaxy.n_spatial_dimensions) {
+	if(galaxy.n_spatial_dimensions==3) {
 		naxes[0]=galaxy.n_xgrid;
 		naxes[1]=galaxy.n_ygrid;
 		naxes[2]=galaxy.n_zgrid;
-		naxes[3]=galaxy.n_E_gammagrid;
-	} //2D
-
-	long nElements = naxes[0]*naxes[1]*naxes[2]*naxes[3];
-
-	valarray<float> array(0., nElements);
-
-	int i = 0;
-
-	if(galaxy.n_spatial_dimensions==2) {
-		for (int ip=0; ip<naxes[2]; ip++)
-			for (int iz=0; iz<naxes[1]; iz++)
-				for (int ir=0; ir<naxes[0]; ir++) {
-					array[i]=galaxy.pi0_decay_emiss.d2[ir][iz].s[ip];
-					array[i]*=pow(galaxy.E_gamma[ip],2);
-					i++;
-				} //ir,iz,ip
-	} //2D
-
-	if(galaxy.n_spatial_dimensions==3) {
-		for (int ip=0; ip<naxes[3]; ip++)
-			for (int iz=0; iz<naxes[2]; iz++)
-				for (int iy=0; iy<naxes[1]; iy++)
-					for (int ix=0; ix<naxes[0]; ix++) {
-						array[i]=galaxy.pi0_decay_emiss.d3[ix][iy][iz].s[ip];
-						array[i]*=pow(galaxy.E_gamma[ip],2);
-						i++;
-					} //ix,iy,iz,ip
+		naxes[3]=1;
 	} //3D
 
-	const std::string outfile = "!" + configure.fOutputDirectory + configure.fOutputPrefix + "pion_decay_emiss_" + galdef.galdef_ID + ".gz";
+	//cout<<galaxy.n_spatial_dimensions<<" "<<naxes[0]<<" "<<naxes[1]<<"  "<<naxes[2]<<endl;
 
-	fitsfile* fptr = 0;
-	int status = 0;
+	nelements=naxes[0]*naxes[1]*naxes[2]*naxes[3];
+
+	valarray<float> array(0., nelements);
+
+	const std::string outfile = "!" + configure.fOutputDirectory + configure.fOutputPrefix + "ionization_rate_" + galdef.galdef_ID + ".gz";
 
 	fits_create_file(&fptr, outfile.c_str(), &status);   /* create new file or overwrite existing one */
 
@@ -77,37 +57,54 @@ int Galprop::store_pi0_decay_emiss()
 	fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status);
 
 	/* Write a keyword; must pass the ADDRESS of the value */
-	float exposure = 1500;
+	exposure = 1500;
 	fits_update_key(fptr, TLONG, "EXPOSURE", &exposure, "Total Exposure Time", &status);
 
-	long fpixel = 1;
+	int i=0;
+
+	if(galaxy.n_spatial_dimensions==2) {
+		for (int iz=0; iz<naxes[1]; iz++)
+			for (int ir=0; ir<naxes[0]; ir++) {
+				array[i]=galaxy.ionization_rate.d2[ir][iz].s[0];
+				i++;
+			} //ir,iz
+	} //2D
+
+	if(galaxy.n_spatial_dimensions==3) {
+		for (int iz=0; iz<naxes[2]; iz++)
+			for (int iy=0; iy<naxes[1]; iy++)
+				for (int ix=0; ix<naxes[0]; ix++) {
+					array[i]=galaxy.ionization_rate.d3[ix][iy][iz].s[0];
+					i++;
+				} //ix,iy,iz
+	} //3D
 
 	/* Write the array of floats to the image */
-	fits_write_img(fptr, TFLOAT, fpixel, nElements, &array[0], &status);
+	fits_write_img(fptr, TFLOAT, fpixel, nelements, &array[0], &status);
 
 	// write basic FITS keywords
-	double crval1, crval2, crval3, crval4;
-	double cdelt1, cdelt2, cdelt3, cdelt4;
+	double crval1,crval2,crval3,crval4;
+	double cdelt1,cdelt2,cdelt3,cdelt4;
 
 	if(galaxy.n_spatial_dimensions==2) {
 		crval1=galaxy.r_min;
 		crval2=galaxy.z_min;
-		crval3=log10(galaxy.E_gamma_min);
+		crval3=1;
 		crval4=1;
 
 		cdelt1=galaxy.dr;
 		cdelt2=galaxy.dz;
-		cdelt3=log10(galaxy.E_gamma_factor);
+		cdelt3=1;
 		cdelt4=1;
 
 		fits_update_key(fptr, TDOUBLE, "CRVAL1", &crval1,"Start of radial dimension (kpc)", &status);
 		fits_update_key(fptr, TDOUBLE, "CRVAL2", &crval2,"Start of Z dimension (kpc)", &status);
-		fits_update_key(fptr, TDOUBLE, "CRVAL3", &crval3,"Start of log10(energy grid/MeV)", &status);
+		fits_update_key(fptr, TDOUBLE, "CRVAL3", &crval3,"Nothing", &status);
 		fits_update_key(fptr, TDOUBLE, "CRVAL4", &crval4,"Nothing", &status);
 
 		fits_update_key(fptr, TDOUBLE, "CDELT1", &cdelt1,"Increment of radial dimension (kpc)", &status);
 		fits_update_key(fptr, TDOUBLE, "CDELT2", &cdelt2,"Increment of Z dimension (kpc)", &status);
-		fits_update_key(fptr, TDOUBLE, "CDELT3", &cdelt3,"Increment of log10(energy grid/MeV)", &status);
+		fits_update_key(fptr, TDOUBLE, "CDELT3", &cdelt3,"Nothing", &status);
 		fits_update_key(fptr, TDOUBLE, "CDELT4", &cdelt4,"Nothing", &status);
 	} //2D
 
@@ -115,27 +112,27 @@ int Galprop::store_pi0_decay_emiss()
 		crval1=galaxy.x_min;
 		crval2=galaxy.y_min;
 		crval3=galaxy.z_min;
-		crval4=log10(galaxy.E_gamma_min);
+		crval4=1;
 
 		cdelt1=galaxy.dx;
 		cdelt2=galaxy.dy;
 		cdelt3=galaxy.dz;
-		cdelt4=log10(galaxy.E_gamma_factor);
+		cdelt4=1;
 
 		fits_update_key(fptr, TDOUBLE, "CRVAL1", &crval1,"Start of X dimension (kpc)", &status);
 		fits_update_key(fptr, TDOUBLE, "CRVAL2", &crval2,"Start of Y dimension (kpc)", &status);
 		fits_update_key(fptr, TDOUBLE, "CRVAL3", &crval3,"Start of Z dimension (kpc)", &status);
-		fits_update_key(fptr, TDOUBLE, "CRVAL4", &crval4,"Start of log10(energy grid/MeV)", &status);
+		fits_update_key(fptr, TDOUBLE, "CRVAL4", &crval4,"Nothing", &status);
 
 		fits_update_key(fptr, TDOUBLE, "CDELT1", &cdelt1,"Increment of X dimension (kpc)", &status);
 		fits_update_key(fptr, TDOUBLE, "CDELT2", &cdelt2,"Increment of Y dimension (kpc)", &status);
 		fits_update_key(fptr, TDOUBLE, "CDELT3", &cdelt3,"Increment of Z dimension (kpc)", &status);
-		fits_update_key(fptr, TDOUBLE, "CDELT4", &cdelt4,"Increment of log10(energy grid/MeV)", &status);
+		fits_update_key(fptr, TDOUBLE, "CDELT4", &cdelt4,"Nothing", &status);
 	} //3D
 
-	fits_close_file(fptr, &status);
+	fits_close_file(fptr, &status);            /* close the file */
 
-	fits_report_error(stderr, status);
+	fits_report_error(stderr, status);  /* print out any error messages */
 
 	INFO("Exit");
 
