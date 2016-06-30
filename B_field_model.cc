@@ -58,11 +58,20 @@ double B_field_model(double r,double z,int model)
 	}
 
 	if (model==20) { //M82 Simple
-		Bo=5.0e-9; // Telsa
-		rscale=0.2; //kpc
-		zscale=0.05; //kpc
+		double Bo=1.0e-8; // Telsa
+		double rscale=0.2; //kpc
+		double zscale=0.05; //kpc
 		double bz_power=-2.;
-		b_field=Bo*exp(-(r)/rscale)*pow(fabs(z)/zscale, bz_power);
+		if (r <= rscale && z <= zscale) {
+			b_field = Bo;
+		} else if (r <= rscale) {
+			b_field = Bo*pow( (fabs(z)-zscale)/zscale, bz_power);
+		} else if (z <= zscale) {
+			b_field = Bo*exp(-(r-rscale)/rscale);
+		} else {
+			b_field = Bo*exp(-(r-rscale)/rscale)*pow( (fabs(z)-zscale)/zscale, bz_power);
+		}
+		
 	}
 
 	if (model> 100) {

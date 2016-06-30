@@ -1938,7 +1938,7 @@ void B_field_3D_model
 
 		double Bo,rscale,zscale;
 		double b_field;
-		double b_power;
+		double bz_power;
 
 		double r=sqrt(x*x+y*y);
 
@@ -1946,9 +1946,17 @@ void B_field_3D_model
 		Bo   = parameters[0]; // Gauss
 		rscale=parameters[1]; // kpc
 		zscale=parameters[2]; // kpc
-		b_power=parameters[3]; //power law
-		b_field=Bo *exp(-(r)/rscale) * pow((fabs(z)+zscale)/zscale, b_power);
-
+		bz_power=parameters[3]; //power law
+		
+		if (r <= rscale && z <= zscale) {
+			b_field = Bo;
+		} else if (r <= rscale) {
+			b_field = Bo*pow( (fabs(z)-zscale)/zscale, bz_power);
+		} else if (z <= zscale) {
+			b_field = Bo*exp(-(r-rscale)/rscale);
+		} else {
+			b_field = Bo*exp(-(r-rscale)/rscale)*pow( (fabs(z)-zscale)/zscale, bz_power);
+		}
 		// the regular field is zero
 		Breg =0.0;
 		Bregx=0.0;
