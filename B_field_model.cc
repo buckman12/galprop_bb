@@ -62,7 +62,7 @@ double B_field_model(double r,double z,int model)
 		double rscale=0.2; //kpc
 		double zscale=0.05; //kpc
 		double bz_power=-2.;
-		if (r <= rscale && z <= zscale) {
+		if (r <= rscale && fabs(z) <= zscale) {
 			b_field = Bo;
 		} else if (r <= rscale) {
 			b_field = Bo*pow( (fabs(z)-zscale)/zscale, bz_power);
