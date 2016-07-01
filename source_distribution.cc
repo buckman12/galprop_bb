@@ -404,11 +404,11 @@ double Galprop::source_distribution (const double x,
 		double rscale= parameters[1];
 		double cnorm = parameters[2];
 
-		if (r <= rscale && z <= zscale) {
+		if (r <= rscale && fabs(z) <= zscale) {
 			result = cnorm;
 		} else if (r <= rscale) {
 			result = cnorm*exp(-(fabs(z)-zscale)/zscale);
-		} else if (z <= zscale) {
+		} else if (fabs(z) <= zscale) {
 			result = cnorm*exp(-(r-rscale)/rscale);
 		} else {
 			result = cnorm*exp(-(r-rscale)/rscale)*exp(-(fabs(z)-zscale)/zscale);
